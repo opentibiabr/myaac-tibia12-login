@@ -69,7 +69,11 @@ if ($isCasting) {
 	
 	$port = 7173;
 	$lastLogin = 0;
-} else {
+
+	$premiumAccount = true;
+	$timePremium = 30 * 86400;
+}
+else {
 	$account = new OTS_Account();
 	$account->find($accountName);
 	
@@ -91,6 +95,9 @@ if ($isCasting) {
 		$query = $query->fetch();
 		$lastLogin = $query['lastlogin'];
 	}
+	
+	$premiumAccount = ($account->isPremium()) ? true : false;
+	$timePremium = time() + ($account->getPremDays() * 86400);
 }
 
 $session = array(
@@ -100,8 +107,8 @@ $session = array(
 	"showrewardnews" => false,
 	"sessionkey" => $accountName . "\n" . $password,
 	"lastlogintime" => $lastLogin,
-	"ispremium" => ($account->isPremium()) ? true : false,
-	"premiumuntil" => time() + ($account->getPremDays() * 86400),
+	"ispremium" => $premiumAccount,
+	"premiumuntil" => $timePremium,
 	"status" => "active"
 );
 
