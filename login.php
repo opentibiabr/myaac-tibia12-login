@@ -62,7 +62,7 @@ if ($isCasting) {
 		$character->load($cast['player_id']);
 		
 		if ($character->isLoaded()) {
-			$char = array("worldid" => 0, "name" => $character->getName(), "ismale" => (($character->getSex() == 1) ? true : false), "tutorial" => false);
+			$char = array("worldid" => 0, "name" => $character->getName(), "ismale" => (($character->getSex() == 1) ? true : false), "tutorial" => true);
 			$characters[] = $char;
 		}
 	}
@@ -86,25 +86,61 @@ else {
 		sendError("The password for this account is wrong. Try again!");
 	
 	foreach($account->getPlayersList() as $character) {
-		$char = array("worldid" => 0, "name" => $character->getName(), "ismale" => (($character->getSex() == 1) ? true : false), "tutorial" => false);
+		$char = array("worldid" => 0, "name" => $character->getName(), "ismale" => (($character->getSex() == 1) ? true : false), "tutorial" => true);
 		$characters[] = $char;
 	}
 	
-	$query = $db->query('SELECT `lastlogin` FROM `players` WHERE `account_id` = ' . $account->getId() . ' ORDER BY `lastlogin` DESC LIMIT 1;');
-	if($query->rowCount() == 1) {
+	$save = false;
+	$timeNow = time();
+
+	$query = $db->query('SELECT `premdays`, `lastday` FROM `accounts` WHERE `id` = ' . $account->getId());
+	if($query->rowCount() > 0) {
 		$query = $query->fetch();
-		$lastLogin = $query['lastlogin'];
+		$premDays = (int)$query['premdays'];
+		$lastDay = (int)$query['lastday'];
+		$lastLogin = $lastDay;
+	}
+	else {
+		sendError("Error while fetching your account data. Please contact admin.");
 	}
 	
-	$premiumAccount = ($account->isPremium()) ? true : false;
-	$timePremium = time() + ($account->getPremDays() * 86400);
+	if($premDays != 0 && $premDays != PHP_INT_MAX ) {
+		if($lastDay == 0) {
+			$lastDay = $timeNow;
+			$save = true;
+		} else {
+			$days = (int)(($timeNow - $lastDay) / 86400);
+			if($days > 0) {
+				if($days >= $premDays) {
+					$premDays = 0;
+					$lastDay = 0;
+				} else {
+					$premDays -= $days;
+					$remainder = (int)(($timeNow - $lastDay) % 86400);
+					$lastDay = $timeNow - remainder;
+				}
+
+				$save = true;
+			}
+		}
+	} else if ($lastDay != 0) {
+		$lastDay = 0;
+		$save = true;
+	}
+
+	if($save) {
+		$db->query('UPDATE `accounts` SET `premdays` = ' . $premDays . ', `lastday` = ' . $lastDay . ' WHERE `id` = ' . $account->getId());
+	}
+
+	$premiumAccount = $premDays > 0;
+	$timePremium = time() + ($premDays * 86400);
 }
 
 $session = array(
-	"fpstracking" => false,
+/*	"fpstracking" => false,
 	"isreturner" => true,
 	"returnernotification" => false,
-	"showrewardnews" => false,
+	"showrewardnews" => false,*/
 	"sessionkey" => $accountName . "\n" . $password,
 	"lastlogintime" => $lastLogin,
 	"ispremium" => $premiumAccount,
@@ -119,7 +155,9 @@ $world = array(
 	"externalport" => $port,
 	"previewstate" => 0,
 	"location" => "BRA",
-	"anticheatprotection" => false
+	"anticheatprotection" => false,
+	"externaladdressunprotected" => $config["lua"]["ip"],
+	"externaladdressprotected" => $config["lua"]["ip"]
 );
 
 $worlds = array($world);
@@ -130,3 +168,4 @@ $playerData["characters"] = $characters;
 $data["playdata"] = $playerData;
 
 echo json_encode($data);
+//echo '<pre>' . var_export($data, true) . '</pre>';
