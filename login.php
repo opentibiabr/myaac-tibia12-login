@@ -57,7 +57,7 @@ switch ($action) {
 		if ($casting) {
 			$port = $config['lua']['liveCastPort'];
 		}
-a
+
 		// default world info
 		$world = [
 			'id' => 0,
@@ -67,7 +67,7 @@ a
 			'externaladdressunprotected' => $config['lua']['ip'],
 			'externalportunprotected' => $port,
 			'previewstate' => 0,
-			'location' => 'BRA', //
+			'location' => 'BRA', // BRA, EUR, USA
 			'anticheatprotection' => false,
 			'pvptype' => array_search($config['lua']['worldType'], ['pvp', 'no-pvp', 'pvp-enforced']),
 			'istournamentworld' => false,
@@ -82,7 +82,7 @@ a
 		$columns = 'name, level, sex, vocation, looktype, lookhead, lookbody, looklegs, lookfeet, lookaddons, deleted, lastlogin';
 		if ($casting) {
 			// get players casting
-			$casters = $db->query("select {$columns} from players inner join live_casts on player_id = id")->fetchAll();
+			$casters = $db->query("select {$columns} from live_casts inner join players  on player_id = id")->fetchAll();
 
 			if (!count($casters)) {
 				sendError('There is no live casts right now!');
@@ -115,7 +115,7 @@ a
 			'lastlogintime' => ($casting || !$account) ? 0 : $account->getLastLogin(),
 			'ispremium' => ($casting || !$account) ? true : $account->isPremium(),
 			'premiumuntil' => ($casting || !$account) ? 0 : (time() + ($account->getPremDays() * 86400)),
-			'status' => 'active',
+			'status' => 'active', // active, frozen or suspended
 			'returnernotification' => false,
 			'showrewardnews' => true,
 			'isreturner' => true,
