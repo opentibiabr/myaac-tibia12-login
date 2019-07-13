@@ -140,6 +140,7 @@ function create_char($player) {
 		'name' => $player['name'],
 		'ismale' => intval($player['sex']) === 1,
 		'tutorial' => false, //intval($player['lastlogin']) === 0,
+		'level' => intval($player['level']),
 		'vocation' => $config['vocations'][$player['vocation']],
 		'outfitid' => intval($player['looktype']),
 		'headcolor' => intval($player['lookhead']),
