@@ -1,9 +1,7 @@
 <?php
-
 require_once('common.php');
 require_once('config.php');
 require_once('config.local.php');
-
 require_once(SYSTEM . 'functions.php');
 require_once(SYSTEM . 'init.php');
 require_once(SYSTEM . 'status.php');
@@ -13,15 +11,14 @@ function sendError($msg){
 	$ret = [];
 	$ret["errorCode"] = 3;
 	$ret["errorMessage"] = $msg;
-
 	die(json_encode($ret));
 }
 
 $request = file_get_contents('php://input');
 $result = json_decode($request);
 $action = isset($result->type) ? $result->type : '';
-switch ($action) {
 
+switch ($action) {
 	case 'cacheinfo':
 		die(json_encode([
 			'playersonline' => $status['players'],
@@ -31,7 +28,7 @@ switch ($action) {
 			'gamingyoutubeviewer' => 0
 		]));
 	break;
-
+	
 	case 'eventschedule':
 		die(json_encode([
 			'eventlist' => []
@@ -45,19 +42,9 @@ switch ($action) {
 	break;
 
 	case 'login':
-
-		// check if cast is enable and accountname is cast
-		$casting = $config['lua']['enableLiveCasting'] && $result->accountname == 'cast';
-		if (!$casting && !$result->password) {
-			sendError('Account name or password is not correct.');
-		}
-
+	
 		$port = $config['lua']['gameProtocolPort'];
-		// change port if is accountname is cast
-		if ($casting) {
-			$port = $config['lua']['liveCastPort'];
-		}
-
+	
 		// default world info
 		$world = [
 			'id' => 0,
@@ -77,44 +64,31 @@ switch ($action) {
 
 		$characters = [];
 		$account = null;
-
+		
 		// common columns
-		$columns = 'name, level, sex, vocation, looktype, lookhead, lookbody, looklegs, lookfeet, lookaddons, deleted, lastlogin';
-		if ($casting) {
-			// get players casting
-			$casters = $db->query("select {$columns} from live_casts inner join players  on player_id = id")->fetchAll();
+		$columns = 'name, level, sex, vocation, looktype, lookhead, lookbody, looklegs, lookfeet, lookaddons, lastlogin';
+		
+		$account = new OTS_Account();
+		$account->find($result->accountname);
+		$config_salt_enabled = fieldExist('salt', 'accounts');
+		$current_password = encrypt(($config_salt_enabled ? $account->getCustomField('salt') : '') . $result->password);
 
-			if (!count($casters)) {
-				sendError('There is no live casts right now!');
-			}
+		if (!$account->isLoaded() || $account->getPassword() != $current_password) {
+			sendError('Account name or password is not correct.');
+		}
 
-			foreach ($casters as $caster) {
-				$characters[] = create_char($caster);
-			}
-		} else {
-			$account = new OTS_Account();
-			$account->find($result->accountname);
-
-			$config_salt_enabled = fieldExist('salt', 'accounts');
-			$current_password = encrypt(($config_salt_enabled ? $account->getCustomField('salt') : '') . $result->password);
-
-			if (!$account->isLoaded() || $account->getPassword() != $current_password) {
-				sendError('Account name or password is not correct.');
-			}
-
-			$players = $db->query("select {$columns} from players where account_id = " . $account->getId())->fetchAll();
-			foreach ($players as $player) {
-				$characters[] = create_char($player);
-			}
+		$players = $db->query("select {$columns} from players where account_id = " . $account->getId())->fetchAll();
+		foreach ($players as $player) {
+			$characters[] = create_char($player);
 		}
 
 		$worlds = [$world];
 		$playdata = compact('worlds', 'characters');
 		$session = [
 			'sessionkey' => "$result->accountname\n$result->password",
-			'lastlogintime' => ($casting || !$account) ? 0 : $account->getLastLogin(),
-			'ispremium' => ($casting || !$account) ? true : $account->isPremium(),
-			'premiumuntil' => ($casting || !$account) ? 0 : (time() + ($account->getPremDays() * 86400)),
+			'lastlogintime' => (!$account) ? 0 : $account->getLastLogin(),
+			'ispremium' => (!$account) ? true : $account->isPremium(),
+			'premiumuntil' => (!$account) ? 0 : (time() + ($account->getPremDays() * 86400)),
 			'status' => 'active', // active, frozen or suspended
 			'returnernotification' => false,
 			'showrewardnews' => true,
@@ -124,10 +98,9 @@ switch ($action) {
 			'tournamentticketpurchasestate' => 0,
 			'emailcoderequest' => false
 		];
-
 		die(json_encode(compact('session', 'playdata')));
 	break;
-
+	
 	default:
 		sendError("Unrecognized event {$action}.");
 	break;
