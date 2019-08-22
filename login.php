@@ -66,7 +66,7 @@ switch ($action) {
 		$account = null;
 		
 		// common columns
-		$columns = 'name, level, sex, vocation, looktype, lookhead, lookbody, looklegs, lookfeet, lookaddons, deleted, lastlogin';
+		$columns = 'name, level, sex, vocation, looktype, lookhead, lookbody, looklegs, lookfeet, lookaddons, deletion, lastlogin';
 		
 		$account = new OTS_Account();
 		$account->find($result->accountname);
