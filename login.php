@@ -121,7 +121,7 @@ function create_char($player) {
 		'legscolor' => intval($player['looklegs']),
 		'detailcolor' => intval($player['lookfeet']),
 		'addonsflags' => intval($player['lookaddons']),
-		'ishidden' => intval($player['deleted']) === 1,
+		'ishidden' => intval($player['deletion']) === 1,
 		'istournamentparticipant' => false,
 		'remainingdailytournamentplaytime' => 0
 	];
