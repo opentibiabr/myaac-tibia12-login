@@ -36,9 +36,13 @@ switch ($action) {
 	break;
 
 	case 'boostedcreature':
+		$boostDB = $db->query("select * from " . $db->tableName('boosted_creature'))->fetchAll();
+		foreach ($boostDB as $Tableboost) {
 		die(json_encode([
-			'boostedcreature' => false,
+			'boostedcreature' => true,
+			'raceid' => intval($Tableboost['raceid'])
 		]));
+		}
 	break;
 
 	case 'login':
