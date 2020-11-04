@@ -14,6 +14,29 @@ function sendError($msg){
 	die(json_encode($ret));
 }
 
+# event schedule function
+function parseEvent($table1, $date, $table2)
+{
+if ($table1) {
+	if ($date) {
+		if ($table2) {
+			$date = $table1->getAttribute('startdate');
+			return date_create("{$date}")->format('U');
+		} else {
+			$date = $table1->getAttribute('enddate');
+			return date_create("{$date}")->format('U');
+		}
+	} else {
+		foreach($table1 as $attr) {
+			if ($attr) {
+				return $attr->getAttribute($table2);
+			}
+		}
+	}
+}
+	return;
+}
+
 $request = file_get_contents('php://input');
 $result = json_decode($request);
 $action = isset($result->type) ? $result->type : '';
@@ -31,9 +54,31 @@ switch ($action) {
 	break;
 	
 	case 'eventschedule':
-		die(json_encode([
-			'eventlist' => []
-		]));
+	$eventlist = [];
+	$file_path = config('server_path') . 'data/XML/events.xml';
+	if (!file_exists($file_path)) {
+		die(json_encode([]));
+		break;
+	}
+	$xml = new DOMDocument;
+	$xml->load($file_path);
+	$tmplist = [];
+	$tableevent = $xml->getElementsByTagName('event');
+
+	foreach ($tableevent as $event) {
+		if ($event) { $tmplist = [
+		'colorlight' => parseEvent($event->getElementsByTagName('colors'), false, 'colorlight'),
+		'colordark' => parseEvent($event->getElementsByTagName('colors'), false, 'colordark'),
+		'description' => parseEvent($event->getElementsByTagName('description'), false, 'description'),
+		'displaypriority' => intval(parseEvent($event->getElementsByTagName('details'), false, 'displaypriority')),
+		'enddate' => intval(parseEvent($event, true, false)),
+		'isseasonal' => getBoolean(intval(parseEvent($event->getElementsByTagName('details'), false, 'isseasonal'))),
+		'name' => $event->getAttribute('name'),
+		'startdate' => intval(parseEvent($event, true, true)),
+		'specialevent' => intval(parseEvent($event->getElementsByTagName('details'), false, 'specialevent'))
+			];
+		$eventlist[] = $tmplist; } }
+	die(json_encode(['eventlist' => $eventlist, 'lastupdatetimestamp' => time()]));
 	break;
 
 	case 'boostedcreature':
