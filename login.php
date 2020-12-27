@@ -180,7 +180,7 @@ switch ($action) {
 		$session = [
 			'sessionkey' => "$result->email\n$result->password",
 			'lastlogintime' => (!$account) ? 0 : $account->getLastLogin(),
-			'ispremium' =>  ($config['server']['freePremium']) ? true : $account->isPremium(),
+			'ispremium' =>  ($config['lua']['freePremium']) ? true : $account->isPremium(),
 			'premiumuntil' => ($account->getPremDays()) > 0 ? (time() + ($account->getPremDays() * 86400)) : 0,
 			'status' => 'active', // active, frozen or suspended
 			'returnernotification' => false,
