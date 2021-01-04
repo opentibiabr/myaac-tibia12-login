@@ -118,7 +118,7 @@ switch ($action) {
 		$account = null;
 		
 		// common columns
-		$columns = 'name, level, sex, vocation, looktype, lookhead, lookbody, looklegs, lookfeet, lookaddons, deletion, lastlogin';
+		$columns = 'name, level, sex, vocation, looktype, lookhead, lookbody, looklegs, lookfeet, lookaddons, lastlogin';
 		
 		$account = new OTS_Account();
 		$account->findByEmail($result->email);
@@ -129,12 +129,8 @@ switch ($action) {
 			sendError('Email or password is not correct.');
 		}
 
-		$players = $db->query("select {$columns} from players where account_id = " . $account->getId())->fetchAll();
+		$players = $db->query("select {$columns} from players where account_id = " . $account->getId() . " AND deletion = 0")->fetchAll();
 		foreach ($players as $player) {
-			if((int)$player['deletion'] !== 0) {
-				continue;
-			}
-
 			$characters[] = create_char($player);
 		}
 		
