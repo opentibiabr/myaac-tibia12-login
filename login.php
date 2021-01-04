@@ -131,6 +131,10 @@ switch ($action) {
 
 		$players = $db->query("select {$columns} from players where account_id = " . $account->getId())->fetchAll();
 		foreach ($players as $player) {
+			if((int)$player['deletion'] !== 0) {
+				continue;
+			}
+
 			$characters[] = create_char($player);
 		}
 		
