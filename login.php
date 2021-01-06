@@ -118,7 +118,7 @@ switch ($action) {
 		$account = null;
 		
 		// common columns
-		$columns = 'name, level, sex, vocation, looktype, lookhead, lookbody, looklegs, lookfeet, lookaddons, deletion, lastlogin';
+		$columns = 'name, level, sex, vocation, looktype, lookhead, lookbody, looklegs, lookfeet, lookaddons, deletion, lastlogin, isreward';
 		
 		$account = new OTS_Account();
 		$account->findByEmail($result->email);
@@ -217,7 +217,7 @@ function create_char($player) {
 		'ishidden' => intval($player['deletion']) === 1,
 		'istournamentparticipant' => false,
 		'ismaincharacter' => true,
-		'dailyrewardstate' => 1,
+		'dailyrewardstate' => intval($player['isreward']),
 		'remainingdailytournamentplaytime' => 0
 	];
 }
