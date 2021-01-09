@@ -129,9 +129,12 @@ switch ($action) {
 			sendError('Email or password is not correct.');
 		}
 
-		$players = $db->query("select {$columns} from players where account_id = " . $account->getId() . " AND deletion = 0")->fetchAll();
-		foreach ($players as $player) {
-			$characters[] = create_char($player);
+		$players = $db->query("select {$columns} from players where account_id = " . $account->getId() . " AND deletion = 0");
+		if($players && $players->rowCount() > 0) {
+			$players = $players->fetchAll();
+			foreach ($players as $player) {
+				$characters[] = create_char($player);
+			}
 		}
 		
 		$save = false;
