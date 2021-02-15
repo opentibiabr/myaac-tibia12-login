@@ -208,7 +208,7 @@ function create_char($player) {
 		'worldid' => 0,
 		'name' => $player['name'],
 		'ismale' => intval($player['sex']) === 1,
-		'tutorial' => (bool)$player['istutorial'], //intval($player['lastlogin']) === 0,
+		'tutorial' => (bool)$player['istutorial'],
 		'level' => intval($player['level']),
 		'vocation' => $config['vocations'][$player['vocation']],
 		'outfitid' => intval($player['looktype']),
