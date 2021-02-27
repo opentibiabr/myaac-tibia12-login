@@ -118,7 +118,7 @@ switch ($action) {
 		$account = null;
 		
 		// common columns
-		$columns = 'name, level, sex, vocation, looktype, lookhead, lookbody, looklegs, lookfeet, lookaddons, lastlogin, isreward';
+		$columns = 'name, level, sex, vocation, looktype, lookhead, lookbody, looklegs, lookfeet, lookaddons, lastlogin, isreward, istutorial';
 		
 		$account = new OTS_Account();
 		$account->findByEmail($result->email);
@@ -208,7 +208,7 @@ function create_char($player) {
 		'worldid' => 0,
 		'name' => $player['name'],
 		'ismale' => intval($player['sex']) === 1,
-		'tutorial' => false, //intval($player['lastlogin']) === 0,
+		'tutorial' => (bool)$player['istutorial'],
 		'level' => intval($player['level']),
 		'vocation' => $config['vocations'][$player['vocation']],
 		'outfitid' => intval($player['looktype']),
