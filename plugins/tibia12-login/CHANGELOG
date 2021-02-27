@@ -18,4 +18,10 @@
 [1.8 - 21.12.2020]
 	* added missing flags
 	* fixed account status
-	
+[1.9 - 09.01.2021]
+	* fix: do not show deleted characters
+	* fix: daily reward state
+	* fix: ishidden flag
+	* fix: compatibility with php 7
+[2.0 - 27.02.2021]
+	* added support istutorial
